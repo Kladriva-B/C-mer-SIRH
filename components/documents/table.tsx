@@ -58,7 +58,8 @@ const columns: LegacyColumnDef<DocumentRow, unknown>[] = [
           title="Supprimer ce document ?"
           description="Cette action est irréversible."
           triggerLabel="Supprimer"
-          onConfirm={() => deleteDocumentAction(row.original.id)}
+          confirmAction={deleteDocumentAction}
+          id={row.original.id}
         />
       </div>
     ),

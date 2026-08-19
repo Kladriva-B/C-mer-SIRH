@@ -145,7 +145,7 @@ export async function getDashboardData() {
             _sum: { netAmount: true },
             where: { ...related, periodYear: year, periodMonth: month },
           });
-          return { label: label.toISOString(), amount: result._sum.netAmount ?? 0 };
+          return { label: label.toISOString(), amount: Number(result._sum.netAmount ?? 0) };
         }),
       )
     : months.map(({ label }) => ({ label: label.toISOString(), amount: 0 }));

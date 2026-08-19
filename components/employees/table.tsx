@@ -61,7 +61,8 @@ function buildColumns(canDelete: boolean): LegacyColumnDef<EmployeeRow, unknown>
               title="Supprimer cet employé ?"
               description="Cette action est irréversible."
               triggerLabel="Supprimer"
-              onConfirm={() => deleteEmployeeAction(row.original.id)}
+              confirmAction={deleteEmployeeAction}
+              id={row.original.id}
             />
           ) : null}
         </div>

@@ -20,13 +20,13 @@ export default async function DashboardPage() {
   const data = await getDashboardData();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageHeader
         icon={LayoutDashboard}
         title={`Bonjour, ${data.greetingName}`}
         description="Tableau de bord Ressources Humaines"
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
         <StatCard icon={Users} title="Employés" value={data.cards.employees} href="/employees" />
         <StatCard icon={Building2} title="Départements" value={data.cards.departments} href="/organization" />
         <StatCard icon={Briefcase} title="Postes" value={data.cards.positions} href="/organization" />
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
         <StatCard icon={Gauge} title="Évaluations effectuées" value={data.cards.evaluations} href="/performance" />
       </div>
       <DashboardCharts {...data.charts} />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Actions à effectuer</CardTitle>
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
               <Link
                 key={action.href}
                 href={action.href}
-                className="flex items-center justify-between rounded-2xl bg-muted/70 px-4 py-3 text-sm transition-colors hover:bg-primary/10"
+                className="flex items-center justify-between rounded-xl bg-muted/70 px-3 py-2 text-sm transition-colors hover:bg-primary/10"
               >
                 <span>{action.label}</span>
                 <strong className="text-primary">{action.count}</strong>
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {data.recentEmployees.map((employee) => (
-              <Link key={employee.id} href={`/employees/${employee.id}`} className="block rounded-2xl bg-muted/60 px-4 py-3 text-sm transition-colors hover:bg-muted">
+              <Link key={employee.id} href={`/employees/${employee.id}`} className="block rounded-xl bg-muted/60 px-3 py-2 text-sm transition-colors hover:bg-muted">
                 <div className="font-medium">
                   {employee.firstName} {employee.lastName}
                 </div>
@@ -77,7 +77,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {data.recentActivity.map((log) => (
-              <div key={log.id} className="rounded-2xl bg-muted/60 px-4 py-3 text-sm">
+              <div key={log.id} className="rounded-xl bg-muted/60 px-3 py-2 text-sm">
                 <div className="font-medium">{log.action.replaceAll("_", " ")}</div>
                 <div className="text-muted-foreground">
                   {log.user?.name ?? "Système"} · {formatRelative(log.createdAt)}

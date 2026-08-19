@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { LoginForm } from "@/app/(auth)/login/login-form";
-import { DemoAccounts } from "@/components/landing/demo-accounts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/logo";
 
@@ -23,10 +22,6 @@ export default function LoginPage() {
         <Suspense>
           <LoginForm />
         </Suspense>
-        <div className="mt-6 rounded-2xl bg-muted/70 p-4">
-          <p className="mb-3 text-sm font-semibold">Identifiants de démonstration</p>
-          <DemoAccounts />
-        </div>
       </CardContent>
     </Card>
   );

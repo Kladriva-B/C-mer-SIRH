@@ -39,7 +39,8 @@ const columns: LegacyColumnDef<SanctionRow, unknown>[] = [
         title="Supprimer cette sanction ?"
         description="Cette action est irréversible."
         triggerLabel="Supprimer"
-        onConfirm={() => deleteSanctionAction(row.original.id)}
+        confirmAction={deleteSanctionAction}
+        id={row.original.id}
       />
     ),
   },

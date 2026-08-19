@@ -25,12 +25,13 @@ export default async function EmployeeProfilePage({
     <div className="space-y-4">
       {contextHasPermission(user, "employees.delete") ? (
         <div className="flex justify-end">
-          <ConfirmDialog
-            title="Supprimer cet employé ?"
-            description="Cette action est irréversible."
-            triggerLabel="Supprimer"
-            onConfirm={() => deleteEmployeeAction(employee.id)}
-          />
+            <ConfirmDialog
+              title="Supprimer cet employé ?"
+              description="Cette action est irréversible."
+              triggerLabel="Supprimer"
+              confirmAction={deleteEmployeeAction}
+              id={employee.id}
+            />
         </div>
       ) : null}
       <EmployeeSpace

@@ -23,31 +23,20 @@ export function AppShell({
   unreadCount: number;
   children: React.ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  function toggleCollapsed() {
-    setCollapsed((current) => {
-      const next = !current;
-      window.localStorage.setItem("camer-sirh-sidebar", next ? "collapsed" : "expanded");
-      return next;
-    });
-  }
 
   return (
     <div className="flex min-h-screen bg-background">
       <div className="hidden lg:block">
         <div className="sticky top-0 h-screen">
-          <Sidebar role={user.role} user={user} collapsed={collapsed} onToggle={toggleCollapsed} />
+          <Sidebar role={user.role} user={user} />
         </div>
       </div>
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-64 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground" showCloseButton={false}>
+        <SheetContent side="left" className="w-56 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground" showCloseButton={false}>
           <Sidebar
             role={user.role}
             user={user}
-            collapsed={false}
-            onToggle={() => setMobileOpen(false)}
             onNavigate={() => setMobileOpen(false)}
           />
         </SheetContent>
@@ -59,7 +48,7 @@ export function AppShell({
           unreadCount={unreadCount}
           onMenuClick={() => setMobileOpen(true)}
         />
-        <main className="flex-1 p-4 md:p-8">{children}</main>
+        <main className="flex-1 p-3 md:p-5">{children}</main>
       </div>
     </div>
   );

@@ -62,28 +62,28 @@ export function DashboardCharts({
   }));
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className="grid gap-3 xl:grid-cols-2">
       <ChartCard title="Évolution des recrutements">
         <LineChart data={employees}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="month" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Line type="monotone" dataKey="count" stroke="var(--primary)" strokeWidth={2} />
+          <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+          <Tooltip formatter={(value) => [Number(value), "Recrutements"]} />
+          <Line type="monotone" dataKey="count" name="Recrutements" stroke="var(--primary)" strokeWidth={2} />
         </LineChart>
       </ChartCard>
       <ChartCard title="Évolution des congés">
         <LineChart data={leaves}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="month" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Line type="monotone" dataKey="count" stroke="var(--brand-secondary)" strokeWidth={2} />
+          <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+          <Tooltip formatter={(value) => [Number(value), "Congés"]} />
+          <Line type="monotone" dataKey="count" name="Congés" stroke="var(--brand-secondary)" strokeWidth={2} />
         </LineChart>
       </ChartCard>
-      <ChartCard title="Répartition des contrats">
+      <ChartCard title="Répartition des contrats" empty={!contractSlices.length}>
         <PieChart>
-          <Pie data={contractSlices} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80}>
+          <Pie data={contractSlices} dataKey="value" nameKey="name" innerRadius={40} outerRadius={64}>
             {contractSlices.map((_, index) => (
               <Cell key={index} fill={COLORS[index % COLORS.length]} />
             ))}
@@ -91,27 +91,27 @@ export function DashboardCharts({
           <Tooltip />
         </PieChart>
       </ChartCard>
-      <ChartCard title="Employés par département">
+      <ChartCard title="Employés par département" empty={!departments.length}>
         <BarChart data={departments}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="name" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Bar dataKey="value" fill="var(--primary)" radius={[6, 6, 0, 0]} />
+          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+          <Tooltip formatter={(value) => [Number(value), "Employés"]} />
+          <Bar dataKey="value" name="Employés" fill="var(--primary)" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ChartCard>
       <ChartCard title="Demandes d'explication">
         <LineChart data={explanations}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="month" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Line type="monotone" dataKey="count" stroke="var(--warning)" strokeWidth={2} />
+          <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+          <Tooltip formatter={(value) => [Number(value), "Demandes"]} />
+          <Line type="monotone" dataKey="count" name="Demandes" stroke="var(--warning)" strokeWidth={2} />
         </LineChart>
       </ChartCard>
-      <ChartCard title="Répartition des sanctions">
+      <ChartCard title="Répartition des sanctions" empty={!sanctions.length}>
         <PieChart>
-          <Pie data={sanctions} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80}>
+          <Pie data={sanctions} dataKey="value" nameKey="name" innerRadius={40} outerRadius={64}>
             {sanctions.map((_, index) => (
               <Cell key={index} fill={SANCTION_COLORS[index % SANCTION_COLORS.length]} />
             ))}
@@ -122,35 +122,49 @@ export function DashboardCharts({
       <ChartCard title="Évolution des performances">
         <LineChart data={performance}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="month" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Line type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} />
+          <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+          <Tooltip formatter={(value) => [Number(value), "Évaluations"]} />
+          <Line type="monotone" dataKey="count" name="Évaluations" stroke="var(--accent)" strokeWidth={2} />
         </LineChart>
       </ChartCard>
       <ChartCard title="Masse salariale">
         <AreaChart data={payrolls}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="month" />
-          <YAxis tickFormatter={(value: number) => `${Math.round(value / 1000)}k`} />
-          <Tooltip formatter={(value) => formatFcfa(Number(value))} />
-          <Area type="monotone" dataKey="amount" stroke="var(--accent)" fill="color-mix(in srgb, var(--accent) 18%, white)" />
+          <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+          <YAxis tick={{ fontSize: 11 }} tickFormatter={(value: number) => `${Math.round(value / 1000)}k`} />
+          <Tooltip formatter={(value) => [formatFcfa(Number(value)), "Net"]} />
+          <Area type="monotone" dataKey="amount" name="Masse salariale" stroke="var(--accent)" fill="color-mix(in srgb, var(--accent) 18%, white)" />
         </AreaChart>
       </ChartCard>
     </div>
   );
 }
 
-function ChartCard({ title, children }: { title: string; children: React.ReactElement }) {
+function ChartCard({
+  title,
+  children,
+  empty,
+}: {
+  title: string;
+  children: React.ReactElement;
+  empty?: boolean;
+}) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          {children}
-        </ResponsiveContainer>
+      <CardContent className="h-48">
+        {empty ? (
+          <p className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            Aucune donnée en base pour le moment.
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            {children}
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

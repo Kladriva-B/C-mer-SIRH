@@ -18,14 +18,14 @@ export function ModuleHero({
   tone?: SectorTone;
 }) {
   return (
-    <section className="ui-surface flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between md:p-7">
-      <div className="flex items-start gap-4">
-        <span className={cn("flex size-12 items-center justify-center rounded-2xl", SECTOR_TONE[tone])}>
-          <Icon className="size-5" />
+    <section className="ui-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-start gap-3">
+        <span className={cn("flex size-9 items-center justify-center rounded-xl", SECTOR_TONE[tone])}>
+          <Icon className="size-4" />
         </span>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <h1 className="text-lg font-bold tracking-tight">{title}</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
         </div>
       </div>
       {action ? (

@@ -3,18 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db/prisma";
 import { loginSchema } from "@/lib/validations/auth";
+import { authConfig } from "@/lib/auth/config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: true,
-  secret: process.env.AUTH_SECRET,
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
-  },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
+  ...authConfig,
   providers: [
     Credentials({
       name: "credentials",
@@ -86,28 +78,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       if (token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: String(token.email).toLowerCase() },
-          include: { role: true },
-        });
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.role = dbUser.role.name;
-          token.name = dbUser.name;
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: String(token.email).toLowerCase() },
+            include: { role: true },
+          });
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role.name;
+            token.name = dbUser.name;
+          }
+        } catch {
+          // Keep the existing token if the database is briefly unavailable.
         }
       }
 
       return token;
     },
-    session({ session, token }) {
-      if (session.user) {
-        session.user.id = String(token.id);
-        session.user.role = token.role as typeof session.user.role;
-        if (token.name) {
-          session.user.name = String(token.name);
-        }
-      }
-      return session;
-    },
+    session: authConfig.callbacks.session,
   },
 });

@@ -35,7 +35,7 @@ export function Header({
   const roleLabel = ROLE_LABELS[user.role as keyof typeof ROLE_LABELS] ?? user.role;
 
   return (
-    <header className="flex h-16 items-center gap-3 border-b border-border bg-surface px-4 md:px-6">
+    <header className="flex h-12 items-center gap-3 border-b border-border bg-surface px-3 md:px-5">
       <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick} aria-label="Ouvrir le menu">
         <Menu className="size-4" />
       </Button>
@@ -48,15 +48,15 @@ export function Header({
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" className="h-11 gap-2 rounded-xl px-1.5">
-                <Avatar className="size-9 after:hidden">
-                  <AvatarFallback className="bg-primary text-xs font-semibold text-primary-foreground">
+              <Button variant="ghost" className="h-9 gap-2 rounded-lg px-1.5">
+                <Avatar className="size-7 after:hidden">
+                  <AvatarFallback className="bg-primary text-[10px] font-semibold text-primary-foreground">
                     {getInitials(user.name ?? "U")}
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden text-left lg:block">
-                  <span className="block text-sm font-semibold leading-tight">{user.name}</span>
-                  <span className="block text-[10px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                  <span className="block text-xs font-semibold leading-tight">{user.name}</span>
+                  <span className="block text-[9px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                     {roleLabel}
                   </span>
                 </span>

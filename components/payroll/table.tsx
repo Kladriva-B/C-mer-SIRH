@@ -45,7 +45,8 @@ const columns: LegacyColumnDef<PayrollRow, unknown>[] = [
           title="Supprimer ce bulletin ?"
           description="Cette action est irréversible."
           triggerLabel="Supprimer"
-          onConfirm={() => deletePayrollAction(row.original.id)}
+          confirmAction={deletePayrollAction}
+          id={row.original.id}
         />
       </div>
     ),

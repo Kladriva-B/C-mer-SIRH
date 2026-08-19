@@ -10,7 +10,7 @@ const links = [
 
 export function LandingHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0b1020]/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link href="/" aria-label="Accueil Camer SIRH">
           <Logo inverted />
@@ -26,7 +26,7 @@ export function LandingHeader() {
           <Button variant="ghost" className="text-white hover:bg-white/10 hover:text-white" render={<Link href="/login" />}>
             Connexion
           </Button>
-          <Button className="bg-white text-primary-dark hover:bg-white/90" render={<Link href="/login" />}>
+          <Button className="bg-white text-primary hover:bg-white/90" render={<Link href="/login" />}>
             Accéder à l&apos;espace
           </Button>
         </div>

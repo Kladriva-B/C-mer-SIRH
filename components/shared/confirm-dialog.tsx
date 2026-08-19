@@ -19,13 +19,15 @@ export function ConfirmDialog({
   description,
   triggerLabel,
   confirmLabel = "Supprimer",
-  onConfirm,
+  confirmAction,
+  id,
 }: {
   title: string;
   description: string;
   triggerLabel: string;
   confirmLabel?: string;
-  onConfirm: () => Promise<void>;
+  confirmAction: (id: string) => Promise<void>;
+  id: string;
 }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -50,7 +52,7 @@ export function ConfirmDialog({
             onClick={() => {
               startTransition(async () => {
                 try {
-                  await onConfirm();
+                  await confirmAction(id);
                   toast.success("Action effectuée");
                   setOpen(false);
                 } catch (error) {

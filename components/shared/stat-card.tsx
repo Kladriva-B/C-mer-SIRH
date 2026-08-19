@@ -26,17 +26,17 @@ export function StatCard({
   icon?: LucideIcon;
 }) {
   const content = (
-    <article className="ui-surface flex items-start gap-3 p-4 transition-transform hover:-translate-y-0.5">
+    <article className="ui-surface flex items-start gap-2.5 p-3">
       {Icon ? (
-        <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl", TONE_ICON[tone])}>
-          <Icon className="size-4" />
+        <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", TONE_ICON[tone])}>
+          <Icon className="size-3.5" />
         </span>
       ) : null}
       <div className="min-w-0">
-        <p className="text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">{title}</p>
+        <p className="text-[10px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">{title}</p>
         <p
           className={cn(
-            "mt-1 truncate text-xl font-bold tracking-tight",
+            "mt-0.5 truncate text-lg font-bold tracking-tight",
             tone === "success" && "text-success",
             tone === "warning" && "text-warning",
             tone === "destructive" && "text-destructive",

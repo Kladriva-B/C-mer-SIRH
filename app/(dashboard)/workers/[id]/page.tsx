@@ -74,7 +74,8 @@ export default async function WorkerDetailPage({ params }: { params: Promise<{ i
               title="Supprimer cet ouvrier ?"
               description="Cette action est irréversible."
               triggerLabel="Supprimer"
-              onConfirm={() => deleteWorkerAction(worker.id)}
+              confirmAction={deleteWorkerAction}
+              id={worker.id}
             />
           </div>
         </div>

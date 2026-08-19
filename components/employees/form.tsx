@@ -109,10 +109,10 @@ export function EmployeeForm({
           <CardTitle>Documents</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field label="Pièce d'identité" name="identityDocument" type="file" />
-          <Field label="Contrat" name="contractDocument" type="file" />
-          <Field label="Photo" name="photo" type="file" />
-          <Field label="Justificatifs" name="attachments" type="file" />
+          <Field label="Pièce d'identité" name="identityDocument" type="file" accept=".pdf,image/*" />
+          <Field label="Contrat" name="contractDocument" type="file" accept=".pdf,image/*" />
+          <Field label="Photo" name="photo" type="file" accept="image/*" />
+          <Field label="Justificatifs" name="attachments" type="file" accept=".pdf,image/*" />
         </CardContent>
       </Card>
       {state?.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
@@ -131,17 +131,19 @@ function Field({
   type = "text",
   defaultValue,
   required,
+  accept,
 }: {
   label: string;
   name: string;
   type?: string;
   defaultValue?: string | number;
   required?: boolean;
+  accept?: string;
 }) {
   return (
     <div className="space-y-2">
       <Label htmlFor={name}>{label}</Label>
-      <Input id={name} name={name} type={type} defaultValue={defaultValue} required={required} />
+      <Input id={name} name={name} type={type} defaultValue={defaultValue} required={required} accept={accept} />
     </div>
   );
 }

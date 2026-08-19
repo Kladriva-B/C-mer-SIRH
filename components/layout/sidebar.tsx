@@ -18,8 +18,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  ChevronsLeft,
-  ChevronsRight,
   ChevronDown,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -112,14 +110,10 @@ function allowed(role: string, permission: PermissionKey | null) {
 export function Sidebar({
   role,
   user,
-  collapsed,
-  onToggle,
   onNavigate,
 }: {
   role: string;
   user: { name?: string | null; email?: string | null };
-  collapsed: boolean;
-  onToggle: () => void;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -131,22 +125,25 @@ export function Sidebar({
       })),
     [role],
   );
+  const activeGroup = items.find((item) =>
+    item.children?.some((child) => pathname === child.href || pathname.startsWith(`${child.href}/`)),
+  )?.label;
+  const [openGroup, setOpenGroup] = useState<string | null>(activeGroup ?? null);
 
   return (
-    <aside
-      className={cn(
-        "flex h-full flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-200",
-        collapsed ? "w-[72px]" : "w-64",
-      )}
-    >
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3 pt-4" aria-label="Navigation principale">
+    <aside className="flex h-full w-56 flex-col bg-sidebar text-sidebar-foreground">
+      <nav
+        className="flex min-h-0 flex-1 flex-col justify-evenly overflow-hidden px-2 py-3"
+        aria-label="Navigation principale"
+      >
         {items.map((item) =>
           item.children?.length ? (
             <NavGroup
               key={item.label}
               item={item}
-              collapsed={collapsed}
               pathname={pathname}
+              open={openGroup === item.label}
+              onToggle={() => setOpenGroup((current) => (current === item.label ? null : item.label))}
               onNavigate={onNavigate}
             />
           ) : (
@@ -155,47 +152,33 @@ export function Sidebar({
               href={item.href!}
               label={item.label}
               icon={item.icon}
-              collapsed={collapsed}
               active={pathname === item.href || pathname.startsWith(`${item.href}/`)}
               onNavigate={onNavigate}
             />
           ),
         )}
       </nav>
-      <div className="space-y-2 border-t border-white/10 p-3">
-        <div className={cn("flex items-center gap-2 rounded-xl bg-white/10 p-2", collapsed && "justify-center")}>
+      <div className="shrink-0 space-y-1.5 border-t border-white/10 p-2.5">
+        <div className="flex items-center gap-2 rounded-xl bg-white/10 p-1.5">
           <Avatar size="sm" className="after:hidden">
             <AvatarFallback className="bg-primary text-[10px] font-semibold text-primary-foreground">
               {getInitials(user.name ?? "U")}
             </AvatarFallback>
           </Avatar>
-          {!collapsed ? (
-            <div className="min-w-0">
-              <p className="truncate text-xs font-medium text-white">{user.name}</p>
-              <p className="truncate text-[10px] font-semibold tracking-wide text-white/55 uppercase">
-                {ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role}
-              </p>
-            </div>
-          ) : null}
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium text-white">{user.name}</p>
+            <p className="truncate text-[10px] font-semibold tracking-wide text-white/55 uppercase">
+              {ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role}
+            </p>
+          </div>
         </div>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className={cn(
-            "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white",
-            collapsed && "justify-center px-0",
-          )}
+          className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1 text-[13px] text-white/70 hover:bg-white/10 hover:text-white"
         >
-          <LogOut className="size-4" />
-          {!collapsed ? "Déconnexion" : <span className="sr-only">Déconnexion</span>}
-        </button>
-        <button
-          type="button"
-          onClick={onToggle}
-          className="flex w-full items-center justify-center rounded-lg py-2 text-white/60 hover:bg-white/10 hover:text-white"
-          aria-label={collapsed ? "Déplier le menu" : "Réduire le menu"}
-        >
-          {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
+          <LogOut className="size-3.5" />
+          Déconnexion
         </button>
       </div>
     </aside>
@@ -204,51 +187,36 @@ export function Sidebar({
 
 function NavGroup({
   item,
-  collapsed,
   pathname,
+  open,
+  onToggle,
   onNavigate,
 }: {
   item: NavItem;
-  collapsed: boolean;
   pathname: string;
+  open: boolean;
+  onToggle: () => void;
   onNavigate?: () => void;
 }) {
   const childActive = item.children?.some((child) => pathname === child.href || pathname.startsWith(`${child.href}/`));
-  const [open, setOpen] = useState(Boolean(childActive));
   const Icon = item.icon;
-
-  if (collapsed) {
-    return (
-      <Link
-        href={item.children?.[0]?.href ?? "/dashboard"}
-        onClick={onNavigate}
-        className={cn(
-          "flex items-center justify-center rounded-lg py-2",
-          childActive ? "bg-sidebar-accent text-white" : "text-white/65 hover:bg-white/10 hover:text-white",
-        )}
-        title={item.label}
-      >
-        <Icon className="size-4" />
-      </Link>
-    );
-  }
 
   return (
     <div>
       <button
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={onToggle}
         className={cn(
-          "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium",
+          "flex w-full items-center gap-2.5 rounded-lg px-2 py-1 text-[13px] font-medium",
           childActive ? "bg-white/10 text-white" : "text-white/65 hover:bg-white/10 hover:text-white",
         )}
       >
-        <Icon className="size-4 shrink-0" />
+        <Icon className="size-3.5 shrink-0" />
         <span className="flex-1 text-left">{item.label}</span>
-        <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
+        <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
       </button>
       {open ? (
-        <div className="ml-4 space-y-0.5 border-l border-white/15 pl-2">
+        <div className="ml-3 space-y-px border-l border-white/15 pl-1.5">
           {item.children?.map((child) => {
             const active = pathname === child.href;
             return (
@@ -257,7 +225,7 @@ function NavGroup({
                 href={child.href}
                 onClick={onNavigate}
                 className={cn(
-                  "block rounded-lg px-2.5 py-1.5 text-sm",
+                  "block rounded-md px-2 py-0.5 text-xs",
                   active
                     ? "bg-sidebar-accent font-medium text-white"
                     : "text-white/60 hover:bg-white/10 hover:text-white",
@@ -277,14 +245,12 @@ function NavLink({
   href,
   label,
   icon: Icon,
-  collapsed,
   active,
   onNavigate,
 }: {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
-  collapsed: boolean;
   active: boolean;
   onNavigate?: () => void;
 }) {
@@ -293,16 +259,15 @@ function NavLink({
       href={href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
-        collapsed && "justify-center px-0",
+        "flex items-center gap-2.5 rounded-lg px-2 py-1 text-[13px] font-medium transition-colors",
         active
           ? "border-l-[3px] border-primary bg-white/15 text-white"
           : "border-l-[3px] border-transparent text-white/65 hover:bg-white/10 hover:text-white",
       )}
       aria-current={active ? "page" : undefined}
     >
-      <Icon className="size-4 shrink-0" />
-      {!collapsed ? <span>{label}</span> : <span className="sr-only">{label}</span>}
+      <Icon className="size-3.5 shrink-0" />
+      <span>{label}</span>
     </Link>
   );
 }
