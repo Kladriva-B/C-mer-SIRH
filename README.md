@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Camer SIRH
 
-## Getting Started
+Application web professionnelle de gestion RH : employés, ouvriers, sanctions, paie, documents et vérification par QR code.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router, TypeScript strict)
+- Tailwind CSS + shadcn/ui
+- PostgreSQL + Prisma
+- Auth.js (NextAuth v5)
+- Zod, React Hook Form, TanStack Table, Recharts
+
+## Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variables d'environnement
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copiez `.env.example` vers `.env` puis renseignez au minimum :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+DATABASE_URL=
+AUTH_SECRET=
+AUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:3000
+```
 
-## Learn More
+Générez un secret :
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Démarrez PostgreSQL, appliquez les migrations, puis chargez les données de démo :
 
-## Deploy on Vercel
+```bash
+pnpm db:setup
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Équivalent manuel :
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+docker compose up -d postgres
+pnpm prisma generate
+pnpm prisma migrate deploy
+pnpm prisma db seed
+```
+
+Attendez que PostgreSQL soit prêt avant `migrate` : `docker compose up -d` démarre le conteneur, mais la base n’accepte pas encore les connexions immédiatement.
+
+## Development
+
+```bash
+pnpm dev
+```
+
+Ouvrez [http://localhost:3000](http://localhost:3000).
+
+## Production
+
+```bash
+pnpm build
+pnpm start
+```
+
+## Docker
+
+```bash
+docker compose --profile full up -d --build
+```
+
+Le service `app` est derrière le profil `full`. En local, vous pouvez ne lancer que PostgreSQL.
+
+## Comptes de démonstration
+
+Mot de passe commun : `Demo123!`
+
+| Rôle | E-mail |
+| --- | --- |
+| Administrateur | `admin@camer-sirh.local` |
+| Responsable RH | `rh.manager@camer-sirh.local` |
+| Employé | `jean.dupont@camer-sirh.local` |
+
+## Architecture
+
+```text
+app/            routes App Router
+components/     UI, layout, modules
+lib/auth        Auth.js + gardes RBAC
+lib/services    règles métier
+lib/repositories accès données
+lib/permissions permissions serveur
+lib/storage     stockage local (S3/MinIO prêt)
+prisma/         schéma, seed
+```
+
+Les pages orchestrent l'interface. Les permissions sont vérifiées côté serveur, pas seulement dans l'UI.
+
+## Vérification QR
+
+Chaque bulletin généré reçoit une référence `DOC-AAAA-XXXXXX` et un QR code public :
+
+```text
+/verify/DOC-2026-000001
+```
+
+## Stockage
+
+- Développement : fichiers dans `uploads/`
+- Production : prévoir `STORAGE_DRIVER=s3` + MinIO/S3 via les variables `S3_*`
+
+## Qualité
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm build
+```

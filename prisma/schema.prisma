@@ -1,0 +1,558 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RoleName {
+  ADMIN
+  HR_MANAGER
+  HR_AGENT
+  MANAGER
+  EMPLOYEE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum WorkerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ContractType {
+  CDI
+  CDD
+  INTERNSHIP
+  TEMPORARY
+  CONSULTANT
+  TRIAL
+}
+
+enum ContractStatus {
+  ACTIVE
+  ENDED
+  PENDING
+}
+
+enum LeaveKind {
+  ANNUAL
+  SICK
+  UNPAID
+  OTHER
+  PERMISSION
+  ABSENCE
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ExplanationStatus {
+  PENDING
+  ANSWERED
+  CLOSED
+}
+
+enum SanctionStatus {
+  PENDING
+  ACTIVE
+  CLOSED
+  CANCELLED
+}
+
+enum PayrollStatus {
+  DRAFT
+  PENDING
+  GENERATED
+  ERROR
+  PAID
+}
+
+enum DocumentStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum VerificationStatus {
+  VALID
+  EXPIRED
+  INVALID
+  NOT_FOUND
+}
+
+enum NotificationType {
+  SUCCESS
+  ERROR
+  WARNING
+  INFO
+}
+
+enum AuditAction {
+  CREATE_EMPLOYEE
+  UPDATE_EMPLOYEE
+  DELETE_EMPLOYEE
+  CREATE_WORKER
+  UPDATE_WORKER
+  DELETE_WORKER
+  CREATE_SANCTION
+  UPDATE_SANCTION
+  DELETE_SANCTION
+  CREATE_PAYROLL
+  UPDATE_PAYROLL
+  DELETE_PAYROLL
+  UPLOAD_DOCUMENT
+  DELETE_DOCUMENT
+  VERIFY_DOCUMENT
+  LOGIN
+  LOGOUT
+  UPDATE_PASSWORD
+  UPDATE_SECURITY
+}
+
+enum PersonType {
+  EMPLOYEE
+  WORKER
+}
+
+enum AccessScope {
+  ALL
+  DEPARTMENT
+  DIRECT_REPORTS
+  SELF
+}
+
+model Role {
+  id           String           @id @default(uuid())
+  name         RoleName         @unique
+  description  String?
+  defaultScope AccessScope      @default(SELF)
+  isSystem     Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  users        User[]
+  permissions  RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  key         String           @unique
+  resource    String
+  action      String
+  description String?
+  createdAt   DateTime         @default(now())
+  roles       RolePermission[]
+
+  @@index([resource, action])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  scope        AccessScope?
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String
+  name          String
+  image            String?
+  isActive         Boolean   @default(true)
+  emailVerifiedAt  DateTime?
+  twoFactorEnabled Boolean   @default(false)
+  lastLoginAt      DateTime?
+  roleId        String
+  role          Role           @relation(fields: [roleId], references: [id])
+  scopeOverride AccessScope?
+  employee      Employee?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  sanctionsIssued Sanction[]   @relation("SanctionIssuer")
+  documentsUploaded Document[] @relation("DocumentUploader")
+
+  @@index([roleId])
+  @@index([isActive])
+  @@index([scopeOverride])
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  legalName String?
+  address   String?
+  city      String?
+  country   String   @default("Cameroun")
+  phone     String?
+  email     String?
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  code        String     @unique
+  description String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  employees   Employee[]
+  positions   Position[]
+}
+
+model Position {
+  id           String     @id @default(uuid())
+  name         String
+  code         String     @unique
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  employees    Employee[]
+  workers      Worker[]
+
+  @@index([departmentId])
+}
+
+model Site {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  code        String   @unique
+  city        String?
+  address     String?
+  email       String?
+  phone       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  workers     Worker[]
+}
+
+model Employee {
+  id           String         @id @default(uuid())
+  userId       String?        @unique
+  user         User?          @relation(fields: [userId], references: [id])
+  firstName    String
+  lastName     String
+  email        String         @unique
+  phone        String?
+  dateOfBirth  DateTime?      @db.Date
+  gender       Gender?
+  address      String?
+  matricule    String         @unique
+  cnps         String?
+  departmentId String
+  department   Department     @relation(fields: [departmentId], references: [id])
+  positionId   String
+  position     Position       @relation(fields: [positionId], references: [id])
+  contractType ContractType
+  hiredAt      DateTime       @db.Date
+  salaryAmount Int
+  status       EmployeeStatus @default(ACTIVE)
+  leaveBalance Int            @default(18)
+  avatarUrl    String?
+  managerId    String?
+  manager      Employee?      @relation("DirectReports", fields: [managerId], references: [id], onDelete: SetNull)
+  directReports Employee[]    @relation("DirectReports")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  contracts    Contract[]
+  sanctions    Sanction[]
+  payrolls     Payroll[]
+  documents     Document[]
+  verifications Verification[]
+  leaves        LeaveRequest[]
+  explanations  ExplanationRequest[]
+  evaluations   Evaluation[]
+
+  @@index([lastName])
+  @@index([departmentId])
+  @@index([positionId])
+  @@index([status])
+  @@index([hiredAt])
+  @@index([managerId])
+}
+
+model Worker {
+  id           String       @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String?      @unique
+  phone        String?
+  dateOfBirth  DateTime?    @db.Date
+  gender       Gender?
+  address      String?
+  matricule    String       @unique
+  positionId   String
+  position     Position     @relation(fields: [positionId], references: [id])
+  siteId       String
+  site         Site         @relation(fields: [siteId], references: [id])
+  assignment   String?
+  contractType ContractType
+  hiredAt      DateTime     @db.Date
+  dailyRate    Int
+  status       WorkerStatus @default(ACTIVE)
+  avatarUrl    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  documents    Document[]
+  contracts    Contract[]
+
+  @@index([lastName])
+  @@index([siteId])
+  @@index([positionId])
+  @@index([status])
+}
+
+model Contract {
+  id           String         @id @default(uuid())
+  employeeId   String?
+  employee     Employee?      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  workerId     String?
+  worker       Worker?        @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  type         ContractType
+  status       ContractStatus @default(ACTIVE)
+  startDate    DateTime       @db.Date
+  endDate      DateTime?      @db.Date
+  salaryAmount Int?
+  netAmount    Int?
+  hourlyRate   Int?
+  weeklyHours  Int?           @default(40)
+  documentId   String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([employeeId])
+  @@index([workerId])
+  @@index([status])
+}
+
+model LeaveRequest {
+  id         String      @id @default(uuid())
+  employeeId String
+  employee   Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  kind       LeaveKind
+  startDate  DateTime    @db.Date
+  endDate    DateTime    @db.Date
+  days       Int
+  reason     String?
+  status     LeaveStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate])
+}
+
+model ExplanationRequest {
+  id         String             @id @default(uuid())
+  employeeId String
+  employee   Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  subject    String
+  message    String
+  status     ExplanationStatus  @default(PENDING)
+  dueDate    DateTime?          @db.Date
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+model Evaluation {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  title      String
+  score      Int
+  comment    String?
+  evaluatedAt DateTime @db.Date
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([evaluatedAt])
+}
+
+model SanctionType {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  code        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  sanctions   Sanction[]
+}
+
+model Sanction {
+  id           String         @id @default(uuid())
+  reference    String         @unique
+  employeeId   String
+  employee     Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  typeId       String
+  type         SanctionType   @relation(fields: [typeId], references: [id])
+  reason       String
+  description  String?
+  date         DateTime       @db.Date
+  durationDays Int?
+  status       SanctionStatus @default(PENDING)
+  comment      String?
+  issuerId     String?
+  issuer       User?          @relation("SanctionIssuer", fields: [issuerId], references: [id])
+  documentId   String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([employeeId])
+  @@index([typeId])
+  @@index([status])
+  @@index([date])
+}
+
+model Payroll {
+  id            String        @id @default(uuid())
+  employeeId    String
+  employee      Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  periodYear    Int
+  periodMonth   Int
+  grossAmount   Int
+  deductions    Int
+  netAmount     Int
+  status        PayrollStatus @default(DRAFT)
+  generatedAt   DateTime?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  items         PayrollItem[]
+  documents     Document[]
+  verification  Verification?
+
+  @@unique([employeeId, periodYear, periodMonth])
+  @@index([status])
+  @@index([periodYear, periodMonth])
+}
+
+model PayrollItem {
+  id          String  @id @default(uuid())
+  payrollId   String
+  payroll     Payroll @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  label       String
+  amount      Int
+  kind        String
+  createdAt   DateTime @default(now())
+
+  @@index([payrollId])
+}
+
+model DocumentType {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  code        String     @unique
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  documents   Document[]
+}
+
+model Document {
+  id           String         @id @default(uuid())
+  name         String
+  typeId       String
+  type         DocumentType   @relation(fields: [typeId], references: [id])
+  employeeId   String?
+  employee     Employee?      @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  workerId     String?
+  worker       Worker?        @relation(fields: [workerId], references: [id], onDelete: SetNull)
+  payrollId    String?
+  payroll      Payroll?       @relation(fields: [payrollId], references: [id], onDelete: SetNull)
+  uploaderId   String?
+  uploader     User?          @relation("DocumentUploader", fields: [uploaderId], references: [id])
+  storageKey   String
+  mimeType     String
+  sizeBytes    Int
+  status       DocumentStatus @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  verification Verification?
+
+  @@index([typeId])
+  @@index([employeeId])
+  @@index([workerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Verification {
+  id          String             @id @default(uuid())
+  reference   String             @unique
+  documentId  String?            @unique
+  document    Document?          @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  payrollId   String?            @unique
+  payroll     Payroll?           @relation(fields: [payrollId], references: [id], onDelete: SetNull)
+  employeeId  String?
+  employee    Employee?          @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  status      VerificationStatus @default(VALID)
+  issuedAt    DateTime           @default(now())
+  expiresAt   DateTime?
+  verifiedAt  DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([status])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     AuditAction
+  resource   String
+  resourceId String?
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+}

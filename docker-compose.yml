@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: camer-sirh-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: camer_sirh
+      POSTGRES_PASSWORD: camer_sirh
+      POSTGRES_DB: camer_sirh
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U camer_sirh -d camer_sirh"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: camer-sirh-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://camer_sirh:camer_sirh@postgres:5432/camer_sirh?schema=public
+      AUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - full
+
+volumes:
+  postgres_data:
